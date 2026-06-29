@@ -43,6 +43,16 @@ function ArcGISMap({
     webmap.add(recommendLayer);
     recommendLayerRef.current = recommendLayer;
 
+    // Register the popup link-click handler ONCE, here — not inside the
+    // recommendations effect, where it would re-stack a new listener
+    // every time recommendations changed.
+    const actionHandle = view.on("trigger-action", (event) => {
+      if (event.action.id === "visit-website") {
+        const website = view.popup.selectedFeature?.attributes?.Website;
+        if (website) window.open(website, "_blank");
+      }
+    });
+
     webmap.when(async () => {
       try {
         const groupLayer = webmap.layers.find(
@@ -86,6 +96,7 @@ function ArcGISMap({
     });
 
     return () => {
+      actionHandle.remove();
       view.destroy();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -161,16 +172,16 @@ function ArcGISMap({
             <polygon points="20,50 10,32 30,32" fill="#C2400A"/>
           </svg>
         `;
-      const encoded =
-  "data:image/svg+xml;base64," +
-  btoa(unescape(encodeURIComponent(pinSvg)));
+        const encoded =
+          "data:image/svg+xml;base64," +
+          btoa(unescape(encodeURIComponent(pinSvg)));
 
         symbol = {
           type: "picture-marker",
           url: encoded,
-          width: "36px",
-          height: "48px",
-          yoffset: "24px", // lift so pin tail points to exact location
+          width: 36,
+          height: 48,
+          yoffset: 24, // lift so pin tail points to exact location
         };
       } else {
         // Smaller orange circles for results 2–5
@@ -186,21 +197,19 @@ function ArcGISMap({
 
       // ── Popup template ──────────────────────────────────────────
       const popupTemplate = {
-        title: isBest
-          ? `⭐ Best Match — {Name}`
-          : `#{rank} — {Name}`,
+        title: isBest ? `⭐ Best Match — {Name}` : `#{rank} — {Name}`,
         content: [
           {
             type: "fields",
             fieldInfos: [
-              { fieldName: "Category",    label: "Category" },
-              { fieldName: "Subcounty",   label: "Subcounty" },
-              { fieldName: "Hours",       label: "Opening hours" },
-              { fieldName: "Budget",      label: "Budget level" },
-              { fieldName: "Entry",       label: "Entry" },
-              { fieldName: "Age",         label: "Suitable age" },
+              { fieldName: "Category", label: "Category" },
+              { fieldName: "Subcounty", label: "Subcounty" },
+              { fieldName: "Hours", label: "Opening hours" },
+              { fieldName: "Budget", label: "Budget level" },
+              { fieldName: "Entry", label: "Entry" },
+              { fieldName: "Age", label: "Suitable age" },
               { fieldName: "Description", label: "About" },
-              { fieldName: "Score",       label: "Match score" },
+              { fieldName: "Score", label: "Match score" },
             ],
           },
         ],
@@ -220,17 +229,17 @@ function ArcGISMap({
         geometry: place.geometry,
         symbol,
         attributes: {
-          Name:        place.name,
-          rank:        index + 1,
-          Category:    place.attributes?.Final_Category    ?? "",
-          Subcounty:   place.attributes?.subcounty         ?? "",
-          Hours:       place.attributes?.Opening_Hours     ?? "",
-          Budget:      place.attributes?.Budget_Level      ?? "",
-          Entry:       place.attributes?.Entry_Category    ?? "",
-          Age:         place.attributes?.Suitable_Age      ?? "",
-          Description: place.attributes?.Description       ?? "",
-          Website:     place.attributes?.Website           ?? "",
-          Score:       `${place.score} / 52`,
+          Name: place.name,
+          rank: index + 1,
+          Category: place.attributes?.Final_Category ?? "",
+          Subcounty: place.attributes?.subcounty ?? "",
+          Hours: place.attributes?.Opening_Hours ?? "",
+          Budget: place.attributes?.Budget_Level ?? "",
+          Entry: place.attributes?.Entry_Category ?? "",
+          Age: place.attributes?.Suitable_Age ?? "",
+          Description: place.attributes?.Description ?? "",
+          Website: place.attributes?.Website ?? "",
+          Score: `${place.score} / 52`,
         },
         popupTemplate,
       });
@@ -238,22 +247,11 @@ function ArcGISMap({
       rl.add(graphic);
     });
 
-    // ── Handle website link action in popup ─────────────────────
-    view.on("trigger-action", (event) => {
-      if (event.action.id === "visit-website") {
-        const website = view.popup.selectedFeature?.attributes?.Website;
-        if (website) window.open(website, "_blank");
-      }
-    });
-
     // ── Zoom to all recommendations ──────────────────────────────
     const geometries = recommendations.map((r) => r.geometry).filter(Boolean);
 
     view
-      .goTo(
-        { target: geometries },
-        { duration: 1000, easing: "ease-in-out" }
-      )
+      .goTo({ target: geometries }, { duration: 1000, easing: "ease-in-out" })
       .then(() => {
         // After zoom, auto-open popup on the best match (index 0)
         const bestMatch = rl.graphics.getItemAt(0);
@@ -265,15 +263,9 @@ function ArcGISMap({
         }
       })
       .catch((err) => console.warn("goTo failed:", err));
-
   }, [recommendations]);
 
-  return (
-    <div
-      ref={mapDiv}
-      style={{ width: "100%", height: "100%" }}
-    />
-  );
+  return <div ref={mapDiv} style={{ width: "100%", height: "100%" }} />;
 }
 
 export default ArcGISMap;

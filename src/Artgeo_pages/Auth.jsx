@@ -56,8 +56,8 @@ export default function Auth({ onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-xl relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div className="w-full max-w-md bg-white p-6 sm:p-8 rounded-xl shadow-xl relative max-h-[90vh] overflow-y-auto">
 
         {/* Close button — only if opened as modal */}
         {onClose && (

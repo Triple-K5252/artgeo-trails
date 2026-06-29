@@ -94,8 +94,8 @@ serve(async (req) => {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: "ArtGeo Trails <notifications@yourdomain.com>",
-      to: [record.email],
+      from: "ArtGeo Trails <onboarding@resend.dev>",
+      to: ["kelvinkama5252@gmail.com"],
       subject: isApproved
         ? `🎉 Your artwork "${record.artwork_title}" is now live on ArtGeo Trails!`
         : `Update on your ArtGeo Trails submission: ${record.artwork_title}`,

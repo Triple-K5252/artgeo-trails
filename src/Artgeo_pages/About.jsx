@@ -185,7 +185,7 @@ export default function About({ onNavigate }) {
 
         {/* Footer credit */}
         <div className="text-center text-xs text-slate-400 pb-4">
-          ArtGeo Trails · Nairobi County · Built with ArcGIS &amp; React
+          ArtGeo Trails · Nairobi County · 
         </div>
 
       </div>
